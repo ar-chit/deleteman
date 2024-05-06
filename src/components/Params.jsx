@@ -14,22 +14,35 @@ import {
   DropdownMenu,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { DotsHorizontalIcon } from "@radix-ui/react-icons";
+import { DotsHorizontalIcon, PlusIcon, TrashIcon } from "@radix-ui/react-icons";
 
 export default function Params() {
   const { control, setValue } = useFormContext();
 
-  const { fields, append } = useFieldArray({
+  const { fields, append, insert, remove } = useFieldArray({
     control,
     name: "params",
   });
 
-  function handleChange(index) {
+  function handleInputChange(index) {
     // Check if index is already selected
     if (!fields[index]?.selected) {
       setValue(`params.${index}.selected`, true);
-      append({ key: "", value: "" });
+      if (index === fields.length - 1) {
+        append({ key: "", value: "" });
+      }
     }
+  }
+
+  function handleInsertNewIndex(index) {
+    insert(index + 1, { key: "", value: "" });
+  }
+
+  function handleDeleteIndex(index) {
+    if (fields.length <= 1) {
+      return;
+    }
+    remove(index);
   }
 
   return (
@@ -78,7 +91,7 @@ export default function Params() {
                     render={({ field }) => (
                       <Input
                         onChange={(e) => {
-                          handleChange(index);
+                          handleInputChange(index);
                           field.onChange(e.target.value);
                         }}
                         value={field.value}
@@ -99,6 +112,18 @@ export default function Params() {
                       />
                     )}
                   />
+                </TableCell>
+                <TableCell>
+                  <div className="flex gap-1 ">
+                    <PlusIcon
+                      onClick={() => handleInsertNewIndex(index)}
+                      className="w-5 h-5 cursor-pointer"
+                    />
+                    <TrashIcon
+                      onClick={() => handleDeleteIndex(index)}
+                      className="w-5 h-5 cursor-pointer"
+                    />
+                  </div>
                 </TableCell>
               </TableRow>
             ))}

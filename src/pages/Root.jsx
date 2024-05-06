@@ -19,6 +19,7 @@ import Editor from "@monaco-editor/react";
 export default function Root() {
   const methods = useForm({
     defaultValues: {
+      method: "get",
       params: [{ selected: false, key: "", value: "" }],
       body: [{ selected: false, key: "", value: "" }],
     },
@@ -27,11 +28,12 @@ export default function Root() {
   const [resValue, setResValue] = useState();
 
   const url = useRef();
+  const method = useRef();
 
   const { mutate } = useMutation({
     mutationFn: async () => {
       const apiUrl = url.current;
-      return await axios.get(apiUrl);
+      return await axios[method.current](apiUrl);
     },
     onSuccess: (res) => {
       setResValue(JSON.stringify(res));
@@ -39,7 +41,9 @@ export default function Root() {
   });
 
   function onSubmit(data) {
+    console.log(data);
     url.current = data.url;
+    method.current = data.method;
     mutate();
   }
   return (
@@ -65,15 +69,15 @@ export default function Root() {
                   <SelectContent>
                     <SelectGroup>
                       <SelectLabel>Methods</SelectLabel>
-                      <SelectItem defaultValue value="GET">
+                      <SelectItem defaultValue value="get">
                         GET
                       </SelectItem>
-                      <SelectItem value="POST">POST</SelectItem>
-                      <SelectItem value="PUT">PUT</SelectItem>
-                      <SelectItem value="PATCH">PATCH</SelectItem>
-                      <SelectItem value="DELETE">DELETE</SelectItem>
-                      <SelectItem value="HEAD">HEAD</SelectItem>
-                      <SelectItem value="OPTIONS">OPTIONS</SelectItem>
+                      <SelectItem value="post">POST</SelectItem>
+                      <SelectItem value="put">PUT</SelectItem>
+                      <SelectItem value="patch">PATCH</SelectItem>
+                      <SelectItem value="delete">DELETE</SelectItem>
+                      <SelectItem value="head">HEAD</SelectItem>
+                      <SelectItem value="options">OPTIONS</SelectItem>
                     </SelectGroup>
                   </SelectContent>
                 </Select>
