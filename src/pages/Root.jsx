@@ -22,8 +22,37 @@ export default function Root() {
       method: "get",
       params: [{ selected: false, key: "", value: "" }],
       body: [{ selected: false, key: "", value: "" }],
+      url: ""
     },
   });
+
+  console.log(methods.watch("params"));
+  methods.watch("params").forEach((param, index) => {
+    const url = methods.getValues("url");
+    const urlValues = url.split("?");
+    const baseUrl = urlValues[0];
+    const queryParams = urlValues.length > 1 ? urlValues[1].split("&") : [];
+
+    if (param.selected) {
+      if (index < queryParams.length) {
+        const [key, value] = queryParams[index].split("=");
+        queryParams[index] = `${param.key}=${param.value}`;
+      } else {
+        queryParams.push(`${param.key}=${param.value}`);
+      }
+    } else {
+      // Remove the key-value pair from queryParams if param is unselected
+      if (index < queryParams.length) {
+        queryParams.splice(index, 1);
+      }
+    }
+
+    const updatedUrl =
+      baseUrl + (queryParams.length > 0 ? "?" + queryParams.join("&") : "");
+    methods.setValue("url", updatedUrl);
+  });
+
+
 
   const [resValue, setResValue] = useState();
 
@@ -31,9 +60,9 @@ export default function Root() {
   const method = useRef();
 
   const { mutate } = useMutation({
-    mutationFn: async () => {
+    mutationFn: async (data) => {
       const apiUrl = url.current;
-      return await axios[method.current](apiUrl);
+      return await axios[method.current](apiUrl, data);
     },
     onSuccess: (res) => {
       setResValue(JSON.stringify(res));
@@ -41,10 +70,19 @@ export default function Root() {
   });
 
   function onSubmit(data) {
-    console.log(data);
+    const bodyData = {};
+
+    data.body.forEach((body) => {
+      if (body.selected) {
+        bodyData[body.key] = body.value;
+      }
+    });
+
     url.current = data.url;
     method.current = data.method;
-    mutate();
+
+    axios.defaults.headers.common.Authorization = `Bearer ${data.authorization}`;
+    mutate(bodyData);
   }
   return (
     <div>

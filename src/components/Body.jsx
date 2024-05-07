@@ -45,10 +45,16 @@ export default function Body() {
     remove(index);
   }
 
+  function checkAllKeys(e) {
+    fields.forEach((_, index) => {
+      setValue(`body.${index}.selected`, e);
+    });
+  }
+
   return (
     <div className="w-full">
       <div className="flex items-center py-4">
-        <Input placeholder="Filter keys..." className="max-w-sm" />
+        <Input placeholder="Search keys..." className="max-w-sm" />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
             <Button className="ml-2 flex justify-center items-center gap-2 ">
@@ -63,7 +69,7 @@ export default function Body() {
           <TableHeader>
             <TableRow>
               <TableHead className="w-10">
-                <Checkbox />
+                <Checkbox onCheckedChange={checkAllKeys} />
               </TableHead>
               <TableHead>Key</TableHead>
               <TableHead>Value</TableHead>

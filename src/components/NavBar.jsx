@@ -19,12 +19,6 @@ const examples = [
 ];
 
 export default function NavBar({ className, ...props }) {
-
-
-    let renderCount = 0;
-
-    renderCount++;
-
   const [selected, setSelected] = useState("Params");
 
   function handleSelected(value) {
