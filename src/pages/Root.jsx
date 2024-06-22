@@ -1,6 +1,8 @@
+import Editor from "@/components/Editor";
 import NavBar from "@/components/NavBar";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { useToast } from "@/components/ui/use-toast";
 import {
   Select,
   SelectContent,
@@ -14,7 +16,28 @@ import { useMutation } from "@tanstack/react-query";
 import axios from "axios";
 import { useRef, useState } from "react";
 import { useForm, FormProvider, Controller } from "react-hook-form";
-import Editor from "@monaco-editor/react";
+import TopBarLoader from "@/components/ui/TopBarLoader";
+
+const getMethodClassName = (method) => {
+  switch (method) {
+    case "get":
+      return "text-green-400 focus:text-green-400";
+    case "post":
+      return "text-orange-400 focus:text-orange-400";
+    case "put":
+      return "text-yellow-400 focus:text-yellow-400";
+    case "patch":
+      return "text-violet-400 focus:text-violet-400";
+    case "delete":
+      return "text-red-400 focus:text-red-400";
+    case "head":
+      return "text-green-400 focus:text-green-400";
+    case "options":
+      return "text-pink-400 focus:text-pink-400";
+    default:
+      return "text-green-400 focus:text-green-400";
+  }
+};
 
 export default function Root() {
   const methods = useForm({
@@ -22,11 +45,19 @@ export default function Root() {
       method: "get",
       params: [{ selected: false, key: "", value: "" }],
       body: [{ selected: false, key: "", value: "" }],
-      url: ""
+      headers: [{ selected: false, key: "", value: "" }],
+      url: "",
     },
   });
 
-  console.log(methods.watch("params"));
+  const { toast } = useToast();
+
+  const [resValue, setResValue] = useState();
+
+  const url = useRef();
+  const method = useRef();
+  const headers = useRef({});
+
   methods.watch("params").forEach((param, index) => {
     const url = methods.getValues("url");
     const urlValues = url.split("?");
@@ -52,39 +83,62 @@ export default function Root() {
     methods.setValue("url", updatedUrl);
   });
 
-
-
-  const [resValue, setResValue] = useState();
-
-  const url = useRef();
-  const method = useRef();
-
-  const { mutate } = useMutation({
+  const { mutate, isPending } = useMutation({
     mutationFn: async (data) => {
       const apiUrl = url.current;
-      return await axios[method.current](apiUrl, data);
+      return await axios[method.current](apiUrl, data, headers.current);
+    },
+    onError: (res) => {
+      toast({
+        variant: "destructive",
+        title: res.response.data.message || "Uh oh! Something went wrong.",
+        description: res.message || "There was a problem with your request.",
+      });
     },
     onSuccess: (res) => {
-      setResValue(JSON.stringify(res));
+      toast({
+        variant: "outline",
+        title: res.data.message || "Success",
+      });
+    },
+    onSettled: (res) => {
+      const formattedRes = JSON.stringify(res.data, null, 2);
+      setResValue(formattedRes);
     },
   });
 
-  function onSubmit(data) {
-    const bodyData = {};
+    function onSubmit(data) {
+      const bodyData = {};
 
-    data.body.forEach((body) => {
-      if (body.selected) {
-        bodyData[body.key] = body.value;
-      }
-    });
+      data.body.forEach((body) => {
+        if (body.selected) {
+          bodyData[body.key] = body.value;
+        }
+      });
 
-    url.current = data.url;
-    method.current = data.method;
+      const headersData = {};
 
-    axios.defaults.headers.common.Authorization = `Bearer ${data.authorization}`;
-    mutate(bodyData);
-  }
+      data.headers.forEach((header) => {
+        if (header.selected) {
+          headersData[header.key] = header.value;
+        }
+      });
+
+      headers.current = headersData;
+
+      url.current = data.url;
+      method.current = data.method;
+
+      axios.defaults.headers.post["Content-Type"] = "application/json";
+      axios.defaults.headers.put["Content-Type"] = "application/json";
+      axios.defaults.headers.delete["Content-Type"] = "application/json";
+
+      axios.defaults.headers.common.Authorization = `Bearer ${data.authorization}`;
+      mutate(bodyData);
+    }
   return (
+    <>
+      {isPending && <TopBarLoader/>}
     <div>
       <FormProvider {...methods}>
         <form
@@ -101,21 +155,31 @@ export default function Root() {
                   onValueChange={field.onChange}
                   defaultValue={field.value}
                 >
-                  <SelectTrigger className="w-[180px]">
+                  <SelectTrigger
+                    className={`w-[180px] ${getMethodClassName(field.value)}`}
+                  >
                     <SelectValue placeholder="HTTP Methods" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectGroup>
                       <SelectLabel>Methods</SelectLabel>
-                      <SelectItem defaultValue value="get">
-                        GET
-                      </SelectItem>
-                      <SelectItem value="post">POST</SelectItem>
-                      <SelectItem value="put">PUT</SelectItem>
-                      <SelectItem value="patch">PATCH</SelectItem>
-                      <SelectItem value="delete">DELETE</SelectItem>
-                      <SelectItem value="head">HEAD</SelectItem>
-                      <SelectItem value="options">OPTIONS</SelectItem>
+                      {[
+                        "get",
+                        "post",
+                        "put",
+                        "patch",
+                        "delete",
+                        "head",
+                        "options",
+                      ].map((method) => (
+                        <SelectItem
+                          key={method}
+                          value={method}
+                          className={getMethodClassName(method)}
+                        >
+                          {method.toUpperCase()}
+                        </SelectItem>
+                      ))}
                     </SelectGroup>
                   </SelectContent>
                 </Select>
@@ -131,19 +195,8 @@ export default function Root() {
           <NavBar />
         </form>
       </FormProvider>
-      {resValue && (
-        <div className="overlay rounded-md overflow-hidden w-full h-full shadow-4xl">
-          <Editor
-            height="85vh"
-            width={`100%`}
-            language={"json"}
-            value={resValue}
-            theme="vs-dark"
-            defaultValue="// some comment"
-            // onChange={handleEditorChange}
-          />
-        </div>
-      )}
+      <Editor content={resValue} />
     </div>
+    </>
   );
 }

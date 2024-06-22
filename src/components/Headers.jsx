@@ -16,18 +16,18 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { DotsHorizontalIcon, PlusIcon, TrashIcon } from "@radix-ui/react-icons";
 
-export default function Params() {
+export default function Headers() {
   const { control, setValue } = useFormContext();
 
   const { fields, append, insert, remove } = useFieldArray({
     control,
-    name: "params",
+    name: "headers",
   });
 
   function handleInputChange(index) {
     // Check if index is already selected
     if (!fields[index]?.selected) {
-      setValue(`params.${index}.selected`, true);
+      setValue(`headers.${index}.selected`, true);
       if (index === fields.length - 1) {
         append({ key: "", value: "" });
       }
@@ -47,7 +47,7 @@ export default function Params() {
 
   function checkAllKeys(e) {
     fields.forEach((_, index) => {
-      setValue(`params.${index}.selected`, e);
+      setValue(`headers.${index}.selected`, e);
     });
   }
 
@@ -70,7 +70,7 @@ export default function Params() {
                 <TableCell className="font-medium">
                   <Controller
                     control={control}
-                    name={`params.${index}.selected`}
+                    name={`headers.${index}.selected`}
                     render={({ field }) => (
                       <Checkbox
                         checked={field.value}
@@ -82,9 +82,10 @@ export default function Params() {
                 <TableCell>
                   <Controller
                     control={control}
-                    name={`params.${index}.key`}
+                    name={`headers.${index}.key`}
                     render={({ field }) => (
                       <Input
+                        placeholder="Key"
                         onChange={(e) => {
                           handleInputChange(index);
                           field.onChange(e.target.value);
@@ -97,9 +98,10 @@ export default function Params() {
                 <TableCell>
                   <Controller
                     control={control}
-                    name={`params.${index}.value`}
+                    name={`headers.${index}.value`}
                     render={({ field }) => (
                       <Input
+                        placeholder="Value"
                         onChange={(e) => {
                           field.onChange(e.target.value);
                         }}

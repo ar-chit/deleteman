@@ -2,6 +2,7 @@ import { useState } from "react";
 import Params from "./Params";
 import Auth from "./Auth";
 import Body from "./Body";
+import Headers from "./Headers";
 
 const examples = [
   {
@@ -49,6 +50,7 @@ export default function NavBar({ className, ...props }) {
       </div>
       {selected === "Params" && <Params />}
       {selected === "Authorization" && <Auth />}
+      {selected === "Headers" && <Headers/>}
       {selected === "Body" && <Body />}
     </div>
   );
