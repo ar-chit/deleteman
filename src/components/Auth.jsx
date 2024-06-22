@@ -8,7 +8,12 @@ export default function Auth() {
   return (
     <div className="grid w-full max-w-sm items-center gap-1.5">
       <Label htmlFor="auth">JWT Token</Label>
-      <Input type="text" id="auth" placeholder="Token" {...register("authorization")} />
+      <Input
+        type="text"
+        id="auth"
+        placeholder="Token"
+        {...register("authorization")}
+      />
     </div>
   );
 }

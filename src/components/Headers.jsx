@@ -29,13 +29,13 @@ export default function Headers() {
     if (!fields[index]?.selected) {
       setValue(`headers.${index}.selected`, true);
       if (index === fields.length - 1) {
-        append({ key: "", value: "" });
+        append({ selected: false, key: "", value: "" });
       }
     }
   }
 
   function handleInsertNewIndex(index) {
-    insert(index + 1, { key: "", value: "" });
+    insert(index + 1, { selected: false, key: "", value: "" });
   }
 
   function handleDeleteIndex(index) {

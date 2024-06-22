@@ -6,6 +6,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Select,
+  SelectContent,
+  SelectGroup,
+  SelectItem,
+  SelectLabel,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Input } from "@/components/ui/input";
 import { Controller, useFieldArray, useFormContext } from "react-hook-form";
@@ -17,7 +26,7 @@ import {
 import { DotsHorizontalIcon, PlusIcon, TrashIcon } from "@radix-ui/react-icons";
 
 export default function Body() {
-  const { control, setValue } = useFormContext();
+  const { control, setValue, watch } = useFormContext();
 
   const { fields, append, insert, remove } = useFieldArray({
     control,
@@ -29,13 +38,13 @@ export default function Body() {
     if (!fields[index]?.selected) {
       setValue(`body.${index}.selected`, true);
       if (index === fields.length - 1) {
-        append({ key: "", value: "" });
+        append({ selected: false, key: "", type: "text", value: "" });
       }
     }
   }
 
   function handleInsertNewIndex(index) {
-    insert(index + 1, { key: "", value: "" });
+    insert(index + 1, { selected: false, key: "", type: "text", value: "" });
   }
 
   function handleDeleteIndex(index) {
@@ -53,7 +62,7 @@ export default function Body() {
 
   return (
     <div className="w-full">
-      <div className="flex items-center py-4">
+      {/* <div className="flex items-center py-4">
         <Input placeholder="Search keys..." className="max-w-sm" />
         <DropdownMenu>
           <DropdownMenuTrigger asChild>
@@ -63,7 +72,7 @@ export default function Body() {
             </Button>
           </DropdownMenuTrigger>
         </DropdownMenu>
-      </div>
+      </div> */}
       <div className="rounded-md border">
         <Table>
           <TableHeader>
@@ -109,17 +118,64 @@ export default function Body() {
                 <TableCell>
                   <Controller
                     control={control}
-                    name={`body.${index}.value`}
+                    name={`body.${index}.type`}
                     render={({ field }) => (
-                      <Input
-                        placeholder="Value"
-                        onChange={(e) => {
-                          field.onChange(e.target.value);
+                      <Select
+                        className="w-[180px] relative"
+                        onValueChange={(value) => {
+                          field.onChange(value)
                         }}
                         value={field.value}
-                      />
+                      >
+                        <SelectTrigger>
+                          <SelectValue placeholder="Types" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectGroup>
+                            <SelectLabel>Select Type</SelectLabel>
+                            {["text", "file"].map((type) => (
+                              <SelectItem key={type} value={type}>
+                                {type}
+                              </SelectItem>
+                            ))}
+                          </SelectGroup>
+                        </SelectContent>
+                      </Select>
                     )}
                   />
+                </TableCell>
+                <TableCell>
+                  {watch(`body.${index}.type`) === "file" ? (
+                    <Controller
+                      control={control}
+                      name={`body.${index}.value`}
+                      render={({ field: { value, onChange, ...field } }) => (
+                        <Input
+                          {...field}
+                          className="dark:file:text-foreground"
+                          type="file"
+                          onChange={(e) => {
+                            onChange(e.target.files[0]);
+                          }}
+                          value={value?.fileName}
+                        />
+                      )}
+                    />
+                  ) : (
+                    <Controller
+                      control={control}
+                      name={`body.${index}.value`}
+                      render={({ field }) => (
+                        <Input
+                          placeholder="Value"
+                          onChange={(e) => {
+                            field.onChange(e.target.value);
+                          }}
+                          value={field.value}
+                        />
+                      )}
+                    />
+                  )}
                 </TableCell>
                 <TableCell>
                   <div className="flex gap-1 ">

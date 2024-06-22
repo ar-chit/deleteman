@@ -44,7 +44,7 @@ export default function Root() {
     defaultValues: {
       method: "get",
       params: [{ selected: false, key: "", value: "" }],
-      body: [{ selected: false, key: "", value: "" }],
+      body: [{ selected: false, key: "", type: "text", value: "" }],
       headers: [{ selected: false, key: "", value: "" }],
       url: "",
     },
@@ -88,6 +88,9 @@ export default function Root() {
       const apiUrl = url.current;
       return await axios[method.current](apiUrl, data, headers.current);
     },
+    onMutate: (req) => {
+      console.log(req);
+    },
     onError: (res) => {
       toast({
         variant: "destructive",
@@ -107,96 +110,105 @@ export default function Root() {
     },
   });
 
-    function onSubmit(data) {
-      const bodyData = {};
+  function onSubmit(data) {
+    const bodyData = {};
 
-      data.body.forEach((body) => {
-        if (body.selected) {
-          bodyData[body.key] = body.value;
-        }
-      });
+    let containFiles = false;
 
-      const headersData = {};
+    data.body.forEach((body) => {
+      if (body.selected) {
+        bodyData[body.key] = body.value;
+      }
+      if(body.type === "file"){
+        containFiles = true;
+      }
+    });
 
-      data.headers.forEach((header) => {
-        if (header.selected) {
-          headersData[header.key] = header.value;
-        }
-      });
+    const headersData = {};
 
-      headers.current = headersData;
+    data.headers.forEach((header) => {
+      if (header.selected) {
+        headersData[header.key] = header.value;
+      }
+    });
 
-      url.current = data.url;
-      method.current = data.method;
+    headers.current = headersData;
 
-      axios.defaults.headers.post["Content-Type"] = "application/json";
-      axios.defaults.headers.put["Content-Type"] = "application/json";
-      axios.defaults.headers.delete["Content-Type"] = "application/json";
+    url.current = data.url;
+    method.current = data.method;
 
-      axios.defaults.headers.common.Authorization = `Bearer ${data.authorization}`;
-      mutate(bodyData);
-    }
+    const contentType = containFiles
+      ? "multipart/form-data"
+      : "application/json";
+
+    axios.defaults.headers.post["Content-Type"] = contentType;
+    axios.defaults.headers.put["Content-Type"] = contentType;
+    axios.defaults.headers.delete["Content-Type"] = contentType;
+
+    axios.defaults.headers.common.Authorization = `Bearer ${data.authorization}`;
+    mutate(bodyData);
+  }
   return (
     <>
-      {isPending && <TopBarLoader/>}
-    <div>
-      <FormProvider {...methods}>
-        <form
-          onSubmit={methods.handleSubmit(onSubmit)}
-          className="flex flex-col items-center gap-5 my-52 justify-center"
-        >
-          <div className="flex w-full  max-w-5xl items-center space-x-2">
-            <Controller
-              control={methods.control}
-              name={"method"}
-              render={({ field }) => (
-                <Select
-                  className="w-[180px] relative"
-                  onValueChange={field.onChange}
-                  defaultValue={field.value}
-                >
-                  <SelectTrigger
-                    className={`w-[180px] ${getMethodClassName(field.value)}`}
+      {isPending && <TopBarLoader />}
+      <div>
+        <FormProvider {...methods}>
+          <form
+            onSubmit={methods.handleSubmit(onSubmit)}
+            className="flex flex-col items-center gap-5 my-52 justify-center"
+          >
+            <div className="flex w-full  max-w-5xl items-center space-x-2">
+              <Controller
+                control={methods.control}
+                name={"method"}
+                render={({ field }) => (
+                  <Select
+                    className="w-[180px] relative"
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
                   >
-                    <SelectValue placeholder="HTTP Methods" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    <SelectGroup>
-                      <SelectLabel>Methods</SelectLabel>
-                      {[
-                        "get",
-                        "post",
-                        "put",
-                        "patch",
-                        "delete",
-                        "head",
-                        "options",
-                      ].map((method) => (
-                        <SelectItem
-                          key={method}
-                          value={method}
-                          className={getMethodClassName(method)}
-                        >
-                          {method.toUpperCase()}
-                        </SelectItem>
-                      ))}
-                    </SelectGroup>
-                  </SelectContent>
-                </Select>
-              )}
-            />
-            <Input
-              {...methods.register("url")}
-              type="text"
-              placeholder="Enter Url"
-            />
-            <Button type="submit">Connect</Button>
-          </div>
-          <NavBar />
-        </form>
-      </FormProvider>
-      <Editor content={resValue} />
-    </div>
+                    <SelectTrigger
+                      className={`w-[180px] ${getMethodClassName(field.value)}`}
+                    >
+                      <SelectValue placeholder="HTTP Methods" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectGroup>
+                        <SelectLabel>Methods</SelectLabel>
+                        {[
+                          "get",
+                          "post",
+                          "put",
+                          "patch",
+                          "delete",
+                          "head",
+                          "options",
+                        ].map((method) => (
+                          <SelectItem
+                            key={method}
+                            value={method}
+                            className={getMethodClassName(method)}
+                          >
+                            {method.toUpperCase()}
+                          </SelectItem>
+                        ))}
+                      </SelectGroup>
+                    </SelectContent>
+                  </Select>
+                )}
+              />
+              <Input
+                {...methods.register("url")}
+                type="text"
+                placeholder="Enter Url"
+              />
+              <Button type="submit">Connect</Button>
+            </div>
+            <NavBar />
+          </form>
+        </FormProvider>
+        <Editor content={resValue} />
+      </div>
     </>
   );
 }
