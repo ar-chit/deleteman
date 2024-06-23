@@ -81,6 +81,7 @@ export default function Body() {
                 <Checkbox onCheckedChange={checkAllKeys} />
               </TableHead>
               <TableHead>Key</TableHead>
+              <TableHead/>
               <TableHead>Value</TableHead>
             </TableRow>
           </TableHeader>
