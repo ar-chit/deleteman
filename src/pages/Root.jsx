@@ -112,8 +112,6 @@ export default function Root() {
   function onSubmit(data) {
     const bodyData = {};
 
-    console.log(data);
-
     let containFiles = false;
 
     data.body.forEach((body) => {
@@ -141,7 +139,7 @@ export default function Root() {
     axios.defaults.headers.post["Content-Type"] = contentType;
     axios.defaults.headers.put["Content-Type"] = contentType;
     axios.defaults.headers.delete["Content-Type"] = contentType;
-    
+
     if (data.authorization) {
       axios.defaults.headers.common.Authorization = `Bearer ${data.authorization}`;
     }

@@ -27,7 +27,7 @@ export default function NavBar({ className, ...props }) {
   }
 
   return (
-    <div className="relative">
+    <div className="relative flex flex-col items-center">
       <div className={"max-w-[600px] lg:max-w-none"}>
         <ul className={`mb-4 flex items-center ${className}`} {...props}>
           {examples.map((example) => (
@@ -50,7 +50,7 @@ export default function NavBar({ className, ...props }) {
       </div>
       {selected === "Params" && <Params />}
       {selected === "Authorization" && <Auth />}
-      {selected === "Headers" && <Headers/>}
+      {selected === "Headers" && <Headers />}
       {selected === "Body" && <Body />}
     </div>
   );

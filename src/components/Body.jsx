@@ -61,7 +61,7 @@ export default function Body() {
   }
 
   return (
-    <div className="w-full">
+    <div className="w-full py-4">
       {/* <div className="flex items-center py-4">
         <Input placeholder="Search keys..." className="max-w-sm" />
         <DropdownMenu>
@@ -81,7 +81,6 @@ export default function Body() {
                 <Checkbox onCheckedChange={checkAllKeys} />
               </TableHead>
               <TableHead>Key</TableHead>
-              <TableHead/>
               <TableHead>Value</TableHead>
             </TableRow>
           </TableHeader>
@@ -124,7 +123,7 @@ export default function Body() {
                       <Select
                         className="w-[180px] relative"
                         onValueChange={(value) => {
-                          field.onChange(value)
+                          field.onChange(value);
                         }}
                         value={field.value}
                       >
